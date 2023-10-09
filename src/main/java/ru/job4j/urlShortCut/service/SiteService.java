@@ -14,12 +14,14 @@ import java.util.Optional;
 @AllArgsConstructor
 public class SiteService {
     private final SiteRepository siteRepository;
+    private final LoginGeneratorUtil loginGeneratorUtil;
+    private final PasswordGeneratorUtil passwordGeneratorUtil;
 
     public Site save(String name) {
         Site site = new Site();
         site.setName(name);
-        site.setLogin(LoginGeneratorUtil.generateLogin());
-        site.setPassword(PasswordGeneratorUtil.generatePassword());
+        site.setLogin(loginGeneratorUtil.generateLogin());
+        site.setPassword(passwordGeneratorUtil.generatePassword());
         return siteRepository.save(site);
     }
 

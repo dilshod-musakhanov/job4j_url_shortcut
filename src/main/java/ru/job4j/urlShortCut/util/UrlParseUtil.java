@@ -9,17 +9,17 @@ import java.util.regex.Pattern;
 @Component
 public final class UrlParseUtil {
 
-    private static final String PATTERN = "https://([^/]+)/";
+    private final String patternString = "(https?://([^/]+)/)";
+    private final Pattern pattern = Pattern.compile(patternString);
 
     private UrlParseUtil() {
 
     }
 
-    public static Optional<String> extractSiteName(String urlAdress) {
-        Pattern regex = Pattern.compile(PATTERN);
-        Matcher matcher = regex.matcher(urlAdress);
+    public Optional<String> extractSiteName(String urlAddress) {
+        Matcher matcher = pattern.matcher(urlAddress);
         if (matcher.find()) {
-            String name = matcher.group(1);
+            String name = matcher.group(2);
             return Optional.of(name);
         }
         return Optional.empty();

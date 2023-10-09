@@ -6,19 +6,19 @@ import java.util.Random;
 
 @Component
 public final class UrlConvertUtil {
-    private static final int LENGTH = 6;
-    private static final String SMALL_CHARS = "abcdefghijklmnopqrstuvwxyz";
-    private static final String NUMBERS = "0123456789";
+    private final int length = 6;
+    private final String smallChars = "abcdefghijklmnopqrstuvwxyz";
+    private final String numbers = "0123456789";
 
     private UrlConvertUtil() {
 
     }
 
-    public static String convertUrl() {
-        String values = SMALL_CHARS + NUMBERS;
+    public String convertUrl() {
+        String values = smallChars + numbers;
         Random random = new Random();
-        char[] converted = new char[LENGTH];
-        for (int i = 0; i < LENGTH; i++) {
+        char[] converted = new char[length];
+        for (int i = 0; i < length; i++) {
             converted[i] = values.charAt(random.nextInt(values.length()));
         }
         return new String(converted);

@@ -15,6 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "site")
 public class Site {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -28,4 +29,9 @@ public class Site {
 
     @OneToMany
     private List<UrlConverted> urls;
+
+    public Site(String name, String password) {
+        this.name = name;
+        this.password = password;
+    }
 }

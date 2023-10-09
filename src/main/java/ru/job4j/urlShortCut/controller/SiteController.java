@@ -1,6 +1,8 @@
 package ru.job4j.urlshortcut.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,55 +22,38 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/sites")
+@AllArgsConstructor
 public class SiteController {
     private final SiteService siteService;
     private final UrlConvertedService urlConvertedService;
-    private final ObjectMapper objectMapper;
-
-    private SiteController(SiteService siteService, UrlConvertedService urlConvertedService, ObjectMapper objectMapper) {
-        this.siteService = siteService;
-        this.urlConvertedService = urlConvertedService;
-        this.objectMapper = objectMapper;
-    }
+    private final ModelMapper modelMapper;
+    private final UrlParseUtil parseUtil;
 
     @PostMapping("/registration")
-    public UrlRegisteredDto register(@RequestBody Map<String, String> site) {
+    public ResponseEntity<?> register(@RequestBody Map<String, String> site) {
         String name = site.get("site");
         Optional<Site> siteOptional = siteService.findByName(name);
         if (siteOptional.isPresent()) {
-            throw new IllegalArgumentException("The site already exists. Use your login and password");
+            return ResponseEntity.badRequest().body(new UrlRegisteredDto());
         }
         Site siteNew = siteService.save(name);
-        var urd = new UrlRegisteredDto();
-        urd.setRegistration("true");
-        urd.setLogin(siteNew.getLogin());
-        urd.setPassword(siteNew.getPassword());
-        return urd;
+        var urd = modelMapper.map(siteNew, UrlRegisteredDto.class);
+        urd.setRegistration(true);
+        return ResponseEntity.status(HttpStatus.CREATED).body(urd);
     }
 
     @PostMapping("/convert")
     public ResponseEntity<Map<String, String>> getCode(@RequestBody Map<String, String> url) {
         var urlAddress = url.get("url");
-        var siteName = UrlParseUtil.extractSiteName(urlAddress);
-        if (siteName.isEmpty()) {
-            throw new IllegalArgumentException("Invalid URL format. Url has to start with http://");
+        var resultMap = urlConvertedService.getOrCreateUrlShortcut(urlAddress);
+        Optional<UrlConverted> urlConvertedOptional = resultMap.keySet().iterator().next();
+        var name = resultMap.get(urlConvertedOptional);
+        if (urlConvertedOptional.isPresent()) {
+            return ResponseEntity.ok(Map.of("code", urlConvertedOptional.get().getUrlShortcut()));
         }
-        var siteOptional = siteService.findByName(siteName.get());
-        if (siteOptional.isEmpty()) {
-            throw new IllegalArgumentException("Site name is not valid");
-        }
-        var urlAddressOptional = urlConvertedService.findByUrl(urlAddress);
-        if (urlAddressOptional.isPresent()) {
-            return ResponseEntity.ok(Map.of("code", urlAddressOptional.get().getUrlShortcut()));
-        }
-        return siteService.findByName(siteName.get())
+        return siteService.findByName(name)
                 .map(site -> {
-                    var urlConverted = new UrlConverted();
-                    urlConverted.setUrl(urlAddress);
-                    urlConverted.setUrlShortcut(UrlConvertUtil.convertUrl());
-                    urlConverted.setVisits(0);
-                    urlConverted.setSiteId(site.getId());
-                    urlConvertedService.save(urlConverted);
+                    var urlConverted = urlConvertedService.createAndSaveUrlConverted(urlAddress, site);
                     return ResponseEntity.ok(Map.of("code", urlConverted.getUrlShortcut()));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -82,8 +67,9 @@ public class SiteController {
             throw new IllegalArgumentException("Code is not valid");
         }
         var urlConverted = urlConvertedOptional.get();
+        var id = urlConverted.getId();
         var url = urlConverted.getUrl();
-        urlConverted.setVisits(urlConverted.getVisits() + 1);
+        urlConvertedService.increaseVisits(id);
         urlConvertedService.save(urlConverted);
         response.setHeader("Location", url);
         response.setStatus(HttpStatus.FOUND.value());
@@ -94,16 +80,6 @@ public class SiteController {
     public ResponseEntity<List<UrlConvertedDto>> getStatistic() {
         List<UrlConvertedDto> list = urlConvertedService.findAll();
         return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    @ExceptionHandler(value = {IllegalArgumentException.class})
-    public void exceptionHandlerIllegalArgumentException(Exception e, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setContentType("application/json");
-        response.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() {{
-            put("message", e.getMessage());
-            put("type", e.getClass());
-        }}));
     }
 
 }

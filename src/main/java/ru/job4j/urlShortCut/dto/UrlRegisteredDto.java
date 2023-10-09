@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Data
 public class UrlRegisteredDto {
-    private String registration;
+    private boolean registration;
     @EqualsAndHashCode.Include
     private String login;
     @EqualsAndHashCode.Include

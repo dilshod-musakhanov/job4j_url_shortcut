@@ -6,20 +6,20 @@ import java.util.Random;
 
 @Component
 public final class PasswordGeneratorUtil {
-    private static final int LENGTH = 8;
-    private static final String SMALL_CHARS = "abcdefghijklmnopqrstuvwxyz";
-    private static final String NUMBERS = "0123456789";
-    private static final String SYMBOLS = "!@#$&*?%";
+    private final int length = 8;
+    private final String smallChars = "abcdefghijklmnopqrstuvwxyz";
+    private final String numbers = "0123456789";
+    private final String symbols = "!@#$&*?%";
 
     private PasswordGeneratorUtil() {
 
     }
 
-    public static String generatePassword() {
-        String values = SMALL_CHARS + SYMBOLS + NUMBERS;
+    public String generatePassword() {
+        String values = smallChars + symbols + numbers;
         Random random = new Random();
-        char[] password = new char[LENGTH];
-        for (int i = 0; i < LENGTH; i++) {
+        char[] password = new char[length];
+        for (int i = 0; i < length; i++) {
             password[i] = values.charAt(random.nextInt(values.length()));
         }
         return new String(password);
