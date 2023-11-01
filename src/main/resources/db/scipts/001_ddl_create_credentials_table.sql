@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS credentials (
+    id SERIAL PRIMARY KEY NOT NULL,
+    login VARCHAR NOT NULL UNIQUE,
+    password VARCHAR NOT NULL
+);
