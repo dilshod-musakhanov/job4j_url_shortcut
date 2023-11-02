@@ -1,0 +1,4 @@
+2023-11-02 06:29:16,821 ERROR ru.job4j.urlshortcut.service.StatisticServiceImpl:getStatistic:65 - No statistic found by domain 'emirates.com'
+2023-11-02 06:29:27,863 ERROR ru.job4j.urlshortcut.service.UserDetailsServiceImpl:loadUserByUsername:28 - Invalid login credentials - J8ZW1S5
+2023-11-02 06:30:45,964 ERROR ru.job4j.urlshortcut.service.UrlServiceImpl:getSite:74 - Site with this 'https://emirates.com/flights/' is not found. Please register site domain first
+2023-11-02 06:31:15,987 ERROR ru.job4j.urlshortcut.service.StatisticServiceImpl:findAndIncrease:45 - Code 'afwdv0' is not valid
